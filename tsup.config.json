@@ -1,0 +1,7 @@
+{
+  "entryPoints": ["src/server.ts"],
+  "format": ["cjs", "esm"],
+  "minify": true,
+  "treeShake": true,
+  "clean": true
+}

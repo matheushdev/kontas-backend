@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CategoryType {
+  EXPENSE
+  INCOME
+}
+
+enum UserType {
+  admin
+  member
+}
+
+model tab_users {
+  user_id         Int      @id @default(autoincrement())
+  username        String   @unique @db.VarChar(10)
+  full_name       String   @db.VarChar(100)
+  password        String   @db.VarChar(64)
+  email           String   @unique @db.VarChar(255)
+  phone           String   @unique @db.VarChar(11)
+  profile_picture String?  @db.Text
+  user_type       UserType @default(member)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  cards_accounts tab_cards_accounts[] @relation("UserCardsAccounts")
+  expense_owners tab_expense_owners[] @relation("ExpenseOwners")
+  incomes        tab_incomes[]        @relation("UserIncomes")
+
+  @@index([username])
+  @@index([email])
+}
+
+model tab_categories {
+  category_id Int          @id @default(autoincrement())
+  name        String       @db.VarChar(100)
+  type        CategoryType
+  description String?      @db.Text
+  color       String?      @db.VarChar(7) // Para cor hex (#FF5733)
+  active      Boolean      @default(true)
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
+
+  expenses tab_expenses[] @relation("ExpenseCategory")
+  incomes  tab_incomes[]  @relation("IncomeCategory")
+
+  @@unique([name, type])
+  @@index([name])
+  @@index([type])
+}
+
+model tab_cards_accounts {
+  card_account_id Int      @id @default(autoincrement())
+  user_id         Int
+  name            String   @db.VarChar(100) // Ex: "Cartão Credito Nubank", "PIX Banco Caixa"
+  type            String   @db.VarChar(20) // CREDIT_CARD, DEBIT_CARD, BANK_ACCOUNT, PIX, CASH
+  bank_name       String?  @db.VarChar(100) // Nome do banco
+  last_digits     String?  @db.VarChar(4) // Últimos 4 dígitos do cartão
+  color           String?  @db.VarChar(7) // Cor para identificação visual
+  active          Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  user     tab_users      @relation("UserCardsAccounts", fields: [user_id], references: [user_id], onDelete: Cascade)
+  expenses tab_expenses[] @relation("ExpenseCardAccount")
+  incomes  tab_incomes[]  @relation("IncomeCardAccount")
+
+  @@index([user_id])
+  @@index([type])
+}
+
+model tab_expenses {
+  expense_id      Int      @id @default(autoincrement())
+  name            String   @db.VarChar(255) // Nome da compra/despesa
+  amount          Decimal  @db.Decimal(10, 2) // Valor com 2 casas decimais
+  category_id     Int
+  card_account_id Int
+  annotation      String?  @db.Text // Anotação opcional
+  expense_date    DateTime @default(now()) // Data da despesa
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  // Relacionamentos
+  category       tab_categories       @relation("ExpenseCategory", fields: [category_id], references: [category_id])
+  card_account   tab_cards_accounts   @relation("ExpenseCardAccount", fields: [card_account_id], references: [card_account_id])
+  expense_owners tab_expense_owners[] @relation("ExpenseOwners")
+
+  @@index([category_id])
+  @@index([card_account_id])
+  @@index([expense_date])
+  @@index([created_at])
+}
+
+model tab_expense_owners {
+  expense_owner_id Int      @id @default(autoincrement())
+  expense_id       Int
+  user_id          Int
+  percentage       Decimal? @default(100.00) @db.Decimal(5, 2) // Percentual de responsabilidade (padrão 100%)
+  created_at       DateTime @default(now())
+
+  // Relacionamentos
+  expense tab_expenses @relation("ExpenseOwners", fields: [expense_id], references: [expense_id], onDelete: Cascade)
+  user    tab_users    @relation("ExpenseOwners", fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  // Um usuário pode ser dono de uma despesa apenas uma vez
+  @@unique([expense_id, user_id])
+  @@index([expense_id])
+  @@index([user_id])
+}
+
+model tab_incomes {
+  income_id       Int      @id @default(autoincrement())
+  name            String   @db.VarChar(255) // Nome da receita
+  amount          Decimal  @db.Decimal(10, 2) // Valor com 2 casas decimais
+  category_id     Int
+  card_account_id Int
+  user_id         Int // Dono da receita (apenas um usuário)
+  annotation      String?  @db.Text // Anotação opcional
+  income_date     DateTime @default(now()) // Data da receita
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  // Relacionamentos
+  category     tab_categories     @relation("IncomeCategory", fields: [category_id], references: [category_id])
+  card_account tab_cards_accounts @relation("IncomeCardAccount", fields: [card_account_id], references: [card_account_id])
+  user         tab_users          @relation("UserIncomes", fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([category_id])
+  @@index([card_account_id])
+  @@index([user_id])
+  @@index([income_date])
+  @@index([created_at])
+}

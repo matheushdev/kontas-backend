@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:17rc1
+    container_name: kontas-postgres-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  prisma:
+    image: node:18
+    container_name: kontas-prisma
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}
+    working_dir: /app
+    volumes:
+      - ./prisma:/app
+    command: ["npx", "prisma", "migrate", "deploy"]
+
+  backend:
+    image: node-backend-kontas:1.0.0
+    container_name: kontas-backend
+    build:
+      context: .
+      args:
+        PORT: 3000
+    restart: unless-stopped
+    command: >
+      sh -c "node dist/server.js"
+    env_file:
+      - .env
+    ports:
+      - 3000:3000
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}
+
+volumes:
+  pgdata:
