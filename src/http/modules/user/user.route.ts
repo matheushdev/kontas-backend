@@ -7,8 +7,9 @@ import {
   LoginInput,
   loginResponseSchemaJson,
   loginSchemaJson,
+  profileResponseSchemaJson,
 } from '@/http/modules/user/user.schema'
-import { loginHandler, registerUserHandler } from '@/http/modules/user/user.controller'
+import { loginHandler, profileHandler, registerUserHandler } from '@/http/modules/user/user.controller'
 
 import { verifyJwt } from '@/http/middlewares/verify-jwt'
 import { verifyUserRole } from '@/http/middlewares/verify-user-type'
@@ -38,6 +39,11 @@ async function userRoutes(app: FastifyInstance) {
           },
           ...defaultErrorResponses,
         },
+        security: [
+          {
+            apiKey: [],
+          },
+        ],
       },
     },
     registerUserHandler,
@@ -67,6 +73,35 @@ async function userRoutes(app: FastifyInstance) {
       },
     },
     loginHandler,
+  )
+
+  app.get(
+    '/',
+    {
+      onRequest: [verifyJwt],
+      schema: {
+        description: 'Retorna o perfil do usuário autenticado no sistema.',
+        summary: 'Buscar perfil do usuário.',
+        tags: ['User'],
+        response: {
+          200: {
+            description: 'teste.',
+            content: {
+              'application/json': {
+                schema: profileResponseSchemaJson,
+              },
+            },
+          },
+          ...defaultErrorResponses,
+        },
+        security: [
+          {
+            apiKey: [],
+          },
+        ],
+      },
+    },
+    profileHandler,
   )
 }
 

@@ -22,3 +22,22 @@ export async function findUserByUsername(username: string) {
     },
   })
 }
+
+export async function findUserById(user_id: number) {
+  return prisma.tab_users.findUnique({
+    where: {
+      user_id,
+    },
+    select: {
+      user_id: true,
+      username: true,
+      full_name: true,
+      email: true,
+      phone: true,
+      profile_picture: true,
+      user_type: true,
+      created_at: true,
+      updated_at: true,
+    },
+  })
+}

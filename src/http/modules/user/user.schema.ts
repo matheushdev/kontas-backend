@@ -76,6 +76,8 @@ const profileResponseSchema = z.object({
   user_id: z.number().int().positive(),
   ...userCore,
   user_type: z.string(),
+  created_at: z.date(),
+  updated_at: z.date(),
 })
 
 const updateUserBodySchema = z.object({

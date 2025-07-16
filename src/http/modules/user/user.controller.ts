@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { CreateUserInput, LoginInput } from '@/http/modules/user/user.schema'
-import { createUser, findUserByUsername } from '@/http/modules/user/user.service'
+import { createUser, findUserById, findUserByUsername } from '@/http/modules/user/user.service'
 import { verifyPassword } from '@/utils/hash'
 
 export async function registerUserHandler(
@@ -35,26 +35,18 @@ export async function loginHandler(
     {
       username: user.username,
       user_type: user.user_type,
+      sub: user.user_id,
     },
-    {
-      sign: {
-        sub: `${user.user_id}`,
-        expiresIn: '7d',
-      },
-    },
+    { expiresIn: '7d' },
   )
 
   const refreshToken = await reply.jwtSign(
     {
       username: user.username,
       user_type: user.user_type,
+      sub: user.user_id,
     },
-    {
-      sign: {
-        sub: `${user.user_id}`,
-        expiresIn: '7d',
-      },
-    },
+    { expiresIn: '7d' },
   )
 
   return reply
@@ -65,8 +57,11 @@ export async function loginHandler(
       httpOnly: true,
     })
     .status(200)
-    .send({
-      token,
-      user,
-    })
+    .send({ token, user })
+}
+
+export async function profileHandler(request: FastifyRequest, reply: FastifyReply) {
+  const { sub } = request.user
+  const user = await findUserById(sub)
+  return reply.code(201).send(user)
 }
