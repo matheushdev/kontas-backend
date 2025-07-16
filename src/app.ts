@@ -12,6 +12,7 @@ import { version } from '../package.json'
 import { env } from '@/env'
 import { errorHandler } from '@/utils/errorHandler'
 import { userRoutes } from '@/http/modules/user/user.route'
+import { categoriesRoutes } from '@/http/modules/categories/categories.route'
 
 const envToLogger = {
   transport: {
@@ -36,7 +37,7 @@ app.register(cors, {
 // app.register(multipart)
 
 app.register(fastifyRateLimit, {
-  max: 60,
+  max: 90,
   timeWindow: '1 minute',
   global: true,
   keyGenerator: function (req) {
@@ -88,13 +89,14 @@ app.register(fastifySwaggerUi, {
         rel: 'icon',
         sizes: '16x16',
         type: 'image/png',
-        content: Buffer.from('iVBOR...', 'base64'),
+        content: Buffer.from('ivbox...', 'base64'),
       },
     ],
   },
 })
 
 app.register(userRoutes, { prefix: 'user' })
+app.register(categoriesRoutes, { prefix: 'categories' })
 
 app.get('/', () => {
   return { version }
