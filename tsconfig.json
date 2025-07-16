@@ -16,5 +16,12 @@
     "skipLibCheck": true,
     "removeComments": true,
     "resolveJsonModule": true,
-  }
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "src",
+    "types"
+  ]
 }
