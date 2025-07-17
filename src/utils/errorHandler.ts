@@ -133,7 +133,7 @@ export function errorHandler(error: any, request: FastifyRequest, reply: Fastify
 
   // Error generic:
   if (error instanceof Error) {
-    console.error('[GENERIC ERROR]:', error)
+    console.error('\n[GENERIC ERROR]:\n', error)
     return reply.code(400).send({ message: error.message })
   }
 

@@ -13,6 +13,7 @@ import { env } from '@/env'
 import { errorHandler } from '@/utils/errorHandler'
 import { userRoutes } from '@/http/modules/user/user.route'
 import { categoriesRoutes } from '@/http/modules/categories/categories.route'
+import { cardsAccountsRoutes } from '@/http/modules/cards-accounts/cards-accounts.route'
 
 const envToLogger = {
   transport: {
@@ -97,6 +98,7 @@ app.register(fastifySwaggerUi, {
 
 app.register(userRoutes, { prefix: 'user' })
 app.register(categoriesRoutes, { prefix: 'categories' })
+app.register(cardsAccountsRoutes, { prefix: 'cards-accounts' })
 
 app.get('/', () => {
   return { version }

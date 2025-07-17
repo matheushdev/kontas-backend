@@ -62,7 +62,7 @@ model tab_cards_accounts {
   type            String   @db.VarChar(20) // CREDIT_CARD, DEBIT_CARD, BANK_ACCOUNT, PIX, CASH
   bank_name       String?  @db.VarChar(100) // Nome do banco
   last_digits     String?  @db.VarChar(4) // Últimos 4 dígitos do cartão
-  color           String?  @db.VarChar(7) // Cor para identificação visual
+  color           String?  @db.VarChar(7) // Cor para identificação visual hex (#FF5733)
   active          Boolean  @default(true)
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
